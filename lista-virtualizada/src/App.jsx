@@ -5,7 +5,7 @@
 // Não modifiquem ainda. Rodem primeiro e sintam o problema.
 // =============================================================
 
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useCallback } from 'react';
 
 // Gerador de 10.000 clientes fake
 function gerarClientes(quantidade) {
@@ -28,12 +28,23 @@ const OVERSCAN = 3; // itens extras renderizados antes/depois do range visível
 
 export default function App() {
   const [busca, setBusca] = useState('');
+  const [inputValue, setInputValue] = useState('');
   const [scrollTop, setScrollTop] = useState(0);
 
   // Fonte única de verdade para a lista: sempre deriva de CLIENTES,
   // nunca do resultado de um slice anterior (isso evitava o encolhimento).
+
+
+  const debounce = (func, delay) => {
+    let timeoutId;
+    return (...args) => {
+      clearTimeout(timeoutId);
+      timeoutId = setTimeout(() => func(...args), delay);
+    };
+  };
+
   const clientesFiltrados = useMemo(() => {
-    if (busca && busca.length >= 3) {
+    if (busca) {
       const termo = busca.toLowerCase();
       return CLIENTES.filter((c) => c.nome.toLowerCase().includes(termo));
     }
@@ -75,14 +86,23 @@ export default function App() {
     setScrollTop(e.target.scrollTop);
   };
 
+  // Só o setBusca (que dispara o filtro pesado em 10.000 itens) é debounced.
+  const debouncedSetBusca = useMemo(() => debounce(setBusca, 800), []);
+
+  const handleBusca = (event) => {
+    const valor = event.target.value;
+    setInputValue(valor); // atualiza a tela imediatamente, sem travar
+    debouncedSetBusca(valor); // só filtra depois de parar de digitar
+  };
+
   return (
     <div style={{ padding: 20, fontFamily: 'sans-serif' }}>
       <h1>Lista de Clientes ({CLIENTES.length.toLocaleString()})</h1>
 
       <input
         type="text"
-        value={busca}
-        onChange={(e) => setBusca(e.target.value)}
+        value={inputValue}
+        onChange={handleBusca}
         placeholder="Digite para buscar..."
         style={{
           width: '100%',
