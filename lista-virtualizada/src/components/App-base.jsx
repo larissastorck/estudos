@@ -10,7 +10,7 @@
 Fazer calculando quantos itens cabem na div
 */
 
-import { useState, useMemo, useEffect } from 'react';
+import { useState, useMemo } from 'react';
 
 // Gerador de 10.000 clientes fake
 function gerarClientes(quantidade) {
