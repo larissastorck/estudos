@@ -1,122 +1,166 @@
-import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from './assets/vite.svg'
-import heroImg from './assets/hero.png'
-import './App.css'
+// =============================================================
+// PONTO DE PARTIDA — Versão lenta
+// =============================================================
+// Esta é a versão "ingênua" que vocês vão otimizar.
+// Não modifiquem ainda. Rodem primeiro e sintam o problema.
+// =============================================================
 
-function App() {
-  const [count, setCount] = useState(0)
+import { useState, useMemo } from 'react';
 
-  return (
-    <>
-      <section id="center">
-        <div className="hero">
-          <img src={heroImg} className="base" width="170" height="179" alt="" />
-          <img src={reactLogo} className="framework" alt="React logo" />
-          <img src={viteLogo} className="vite" alt="Vite logo" />
-        </div>
-        <div>
-          <h1>Get started</h1>
-          <p>
-            Edit <code>src/App.jsx</code> and save to test <code>HMR</code>
-          </p>
-        </div>
-        <button
-          type="button"
-          className="counter"
-          onClick={() => setCount((count) => count + 1)}
-        >
-          Count is {count}
-        </button>
-      </section>
+// Gerador de 10.000 clientes fake
+function gerarClientes(quantidade) {
+  const nomes = ['Ana', 'Bruno', 'Carla', 'Diego', 'Eva', 'Felipe', 'Gabriela', 'Hugo', 'Isabela', 'João'];
+  const sobrenomes = ['Silva', 'Souza', 'Oliveira', 'Costa', 'Santos', 'Lima', 'Pereira', 'Rodrigues'];
 
-      <div className="ticks"></div>
-
-      <section id="next-steps">
-        <div id="docs">
-          <svg className="icon" role="presentation" aria-hidden="true">
-            <use href="/icons.svg#documentation-icon"></use>
-          </svg>
-          <h2>Documentation</h2>
-          <p>Your questions, answered</p>
-          <ul>
-            <li>
-              <a href="https://vite.dev/" target="_blank">
-                <img className="logo" src={viteLogo} alt="" />
-                Explore Vite
-              </a>
-            </li>
-            <li>
-              <a href="https://react.dev/" target="_blank">
-                <img className="button-icon" src={reactLogo} alt="" />
-                Learn more
-              </a>
-            </li>
-          </ul>
-        </div>
-        <div id="social">
-          <svg className="icon" role="presentation" aria-hidden="true">
-            <use href="/icons.svg#social-icon"></use>
-          </svg>
-          <h2>Connect with us</h2>
-          <p>Join the Vite community</p>
-          <ul>
-            <li>
-              <a href="https://github.com/vitejs/vite" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#github-icon"></use>
-                </svg>
-                GitHub
-              </a>
-            </li>
-            <li>
-              <a href="https://chat.vite.dev/" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#discord-icon"></use>
-                </svg>
-                Discord
-              </a>
-            </li>
-            <li>
-              <a href="https://x.com/vite_js" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#x-icon"></use>
-                </svg>
-                X.com
-              </a>
-            </li>
-            <li>
-              <a href="https://bsky.app/profile/vite.dev" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#bluesky-icon"></use>
-                </svg>
-                Bluesky
-              </a>
-            </li>
-          </ul>
-        </div>
-      </section>
-
-      <div className="ticks"></div>
-      <section id="spacer"></section>
-    </>
-  )
+  return Array.from({ length: quantidade }, (_, i) => ({
+    id: i,
+    nome: `${nomes[i % nomes.length]} ${sobrenomes[i % sobrenomes.length]} ${i}`,
+    email: `cliente${i}@example.com`,
+  }));
 }
 
-export default App
+const CLIENTES = gerarClientes(10000);
+
+// Constantes da virtualização
+const ITEM_HEIGHT = 40;
+const CONTAINER_HEIGHT = 400;
+const OVERSCAN = 3; // itens extras renderizados antes/depois do range visível
+
+export default function App() {
+  const [busca, setBusca] = useState('');
+  const [scrollTop, setScrollTop] = useState(0);
+
+  // Fonte única de verdade para a lista: sempre deriva de CLIENTES,
+  // nunca do resultado de um slice anterior (isso evitava o encolhimento).
+  const clientesFiltrados = useMemo(() => {
+    if (busca && busca.length >= 3) {
+      const termo = busca.toLowerCase();
+      return CLIENTES.filter((c) => c.nome.toLowerCase().includes(termo));
+    }
+    return CLIENTES;
+  }, [busca]);
+
+  console.log("clientesFiltrados", clientesFiltrados.length)
+
+  // Quantos itens cabem na viewport visível
+  const itensVisiveis = Math.ceil(CONTAINER_HEIGHT / ITEM_HEIGHT);
+
+  // startIndex: primeiro item visível, com overscan, nunca negativo
+  const startIndex = Math.max(0, Math.floor(scrollTop / ITEM_HEIGHT) - OVERSCAN);
+
+  // endIndex: nunca passa do tamanho real da lista filtrada
+  const endIndex = Math.min(
+    clientesFiltrados.length,//10000
+    startIndex + itensVisiveis + OVERSCAN * 2// 0 + 10 + 3 * 2 = 16
+  );
+
+  console.log("startIndex", startIndex)
+  console.log("endIndex", endIndex)
+
+  // Só esse pedaço vai pro DOM
+  const itensRenderizados = clientesFiltrados.slice(startIndex, endIndex);
+
+  console.log("itensRenderizados", itensRenderizados)
+
+  // Altura "fake" total — é isso que faz o navegador achar que existem
+  // clientesFiltrados.length itens, mesmo só ~itensVisiveis estando no DOM
+  const alturaTotal = clientesFiltrados.length * ITEM_HEIGHT;
+  console.log("alturaTotal", alturaTotal)
+
+  // Deslocamento para empurrar o bloco renderizado para a posição certa
+  const offsetY = startIndex * ITEM_HEIGHT;
+  console.log("offsetY", offsetY)
+
+  const handleScroll = (e) => {
+    setScrollTop(e.target.scrollTop);
+  };
+
+  return (
+    <div style={{ padding: 20, fontFamily: 'sans-serif' }}>
+      <h1>Lista de Clientes ({CLIENTES.length.toLocaleString()})</h1>
+
+      <input
+        type="text"
+        value={busca}
+        onChange={(e) => setBusca(e.target.value)}
+        placeholder="Digite para buscar..."
+        style={{
+          width: '100%',
+          padding: 10,
+          fontSize: 16,
+          marginBottom: 20,
+        }}
+      />
+
+      <p>{clientesFiltrados.length.toLocaleString()} resultados</p>
+
+      {/* Container com scroll real */}
+      <div
+        onScroll={handleScroll}
+        style={{
+          height: CONTAINER_HEIGHT,
+          overflow: 'auto',
+          border: '1px solid #ccc',
+          position: 'relative',
+        }}
+      >
+        {/* Espaçador: altura total "fake" para o scroll representar a lista inteira */}
+        <div style={{ height: alturaTotal, position: 'relative' }}>
+          {/* Bloco real de itens, empurrado para a posição correta */}
+          <div
+            style={{
+              position: 'absolute',
+              top: 0,
+              left: 0,
+              right: 0,
+              transform: `translateY(${offsetY}px)`,
+            }}
+          >
+            {itensRenderizados.map((cliente) => (
+              <div
+                key={cliente.id}
+                style={{
+                  height: ITEM_HEIGHT,
+                  padding: '8px 12px',
+                  borderBottom: '1px solid #eee',
+                  boxSizing: 'border-box',
+                }}
+              >
+                <strong>{cliente.nome}</strong> — {cliente.email}
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+/*
+import { useState, useEffect } from 'react';
+
+function DetectorDeScroll() {
+  const [posicao, setPosicao] = useState(0);
+
+  useEffect(() => {
+    // 1. Cria a função que será executada no scroll
+    const lidarComScroll = () => {
+      setPosicao(window.scrollY);
+    };
+
+    // 2. Adiciona o listener quando o componente aparece na tela
+    window.addEventListener('scroll', lidarComScroll);
+
+    // 3. FUNÇÃO DE LIMPEZA (Cleanup): Remove o listener quando o componente some
+    return () => {
+      window.removeEventListener('scroll', lidarComScroll);
+    };
+  }, []); // Array vazio garante que o listener seja adicionado apenas uma vez
+
+  return (
+    <div style={{ position: 'fixed', top: 10, left: 10, background: '#fff' }}>
+      Você rolou {posicao} pixels para baixo.
+    </div>
+  );
+}
+*/
