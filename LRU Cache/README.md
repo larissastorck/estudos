@@ -160,6 +160,37 @@ Substituam:
 
 Também tem um arquivo `lru-cache.test.js` — os testes que a implementação precisa passar.
 
+### Como rodar os testes
+
+Dentro da pasta do projeto Vite (`lru-cache/`):
+
+```bash
+cd lru-cache
+npm install -D vitest
+```
+
+No `package.json`, garanta o script de teste:
+
+```json
+"scripts": {
+  "test": "vitest"
+}
+```
+
+O arquivo `lru-cache.test.js` importa a implementação de `./src/lru-cache`. Então a classe `LRUCache` precisa estar exportada em `src/lru-cache.js` com a API do enunciado (`get`, `set`, `has`, `delete`, `size`, `keys`).
+
+Para rodar:
+
+```bash
+npm test
+```
+
+Isso abre o Vitest em modo watch (re-roda quando você salva). Para uma execução única:
+
+```bash
+npx vitest run
+```
+
 ---
 
 ## O desafio em 4 partes
@@ -223,7 +254,7 @@ E a classe guarda:
 - Se `set()` for chamado numa chave existente, atualiza o valor E move para head
 - Cuidem dos edge cases: cache vazio, um único item, remover head, remover tail
 
-**Rodem os testes:**
+**Rodem os testes** (ver seção [Como rodar os testes](#como-rodar-os-testes) acima):
 
 ```bash
 npm test
