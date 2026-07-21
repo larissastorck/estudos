@@ -215,4 +215,41 @@ describe('LRUCache', () => {
       expect(c.has('b')).toBe(false); // 'b' foi descartado
     });
   });
+
+  // ============================================
+  // Nível 7 — "Sujar o cache" (fraqueza do LRU)
+  // ============================================
+  // Cenário do README: item muito usado no passado continua
+  // ocupando espaço mesmo depois de parar de ser útil.
+  // O LRU só o remove quando outros itens o empurram para fora.
+  describe('sujar o cache (README)', () => {
+    it('item muito acessado no passado ocupa espaço até ser empurrado para fora', () => {
+      const c = new LRUCache(3);
+
+      // --- Hora 1: usuário olha o perfil 42 mil vezes ---
+      // Cada get renova o 42 → ele fica sempre no topo, protegido.
+      c.set(42, 'perfil-42');
+      c.set(1, 'outro');
+      c.set(2, 'outro');
+      for (let i = 0; i < 1000; i++) c.get(42);
+
+      expect(c.keys()[0]).toBe(42); // 42 ainda é o mais recente
+
+      // --- Hora 2: fecha a tela. Nunca mais vai olhar o 42. ---
+      // Começa a olhar outros usuários. O 42 "suja" o cache:
+      // ainda ocupa 1 dos 3 slots, mesmo sem ser útil.
+
+      c.set(10, 'perfil-10');
+      expect(c.keys()).toEqual([10, 42, 2]); // 1 saiu; 42 ainda lá
+
+      c.set(11, 'perfil-11');
+      expect(c.keys()).toEqual([11, 10, 42]); // 42 desceu, mas ainda ocupa espaço
+      expect(c.has(42)).toBe(true); // ← aqui está o "sujar": inútil, mas presente
+
+      // Só agora, com o 3º acesso novo, o 42 finalmente sai
+      c.set(12, 'perfil-12');
+      expect(c.keys()).toEqual([12, 11, 10]);
+      expect(c.has(42)).toBe(false);
+    });
+  });
 });
