@@ -6,7 +6,7 @@
 // =============================================================
 
 import { useState } from 'react';
-// import { LRUCache } from './lru-cache'; // 👈 descomente quando implementar
+import { LRUCache } from './lru-cache'; // 👈 descomente quando implementar
 
 // "API" simulada — 1 segundo de delay para vocês verem o efeito do cache
 function buscarUsuarioNaAPI(id) {
@@ -21,8 +21,7 @@ function buscarUsuarioNaAPI(id) {
   });
 }
 
-// TODO Parte 3: criar uma instância do cache aqui
-// const cache = new LRUCache(5);
+ const cache = new LRUCache(5);
 
 export default function App() {
   const [inputId, setInputId] = useState('');
@@ -44,17 +43,35 @@ export default function App() {
     //   3. Se não estiver → miss, chamar API, salvar no cache
     //   4. Atualizar setOrdemCache com cache.keys()
 
+
+
+    const resultado = cache.get(id);
+
+    if(resultado !== -1) {
+      console.log('Cache hit');
+      setHits(hits + 1);
+      setUltimoResultado({ usuario: resultado, veioDeCache: true });
+      setOrdemCache(cache.keys());
+      return;
+    }
+
     setCarregando(true);
 
     // Placeholder — vocês vão substituir por lógica com cache
     const usuario = await buscarUsuarioNaAPI(id);
+    cache.put(id, usuario); //salvar no cache
+    setOrdemCache(cache.keys());
+    setMisses(misses + 1);
     setUltimoResultado({ usuario, veioDeCache: false });
 
     setCarregando(false);
+
+    console.log('Cache keys:', cache.keys());
+    console.log('Cache values:', cache.values());
   }
 
   return (
-    <div style={{ padding: 20, fontFamily: 'sans-serif', maxWidth: 700 }}>
+    <div style={{ padding: 20, fontFamily: 'sans-serif', maxWidth: 800 }}>
       <h1>Busca de Usuário com Cache LRU</h1>
       <p style={{ color: '#666' }}>
         Capacidade do cache: 5 | Simulação de API: 1s de delay
