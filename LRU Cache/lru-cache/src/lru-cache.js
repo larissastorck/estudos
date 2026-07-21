@@ -124,4 +124,8 @@ class Node {
     values() {
         return this.list.getValues();
     }
+
+    has(key) {
+      return this.cache.has(key);
+    }
   }
