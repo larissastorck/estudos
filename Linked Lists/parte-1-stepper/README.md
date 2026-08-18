@@ -1,23 +1,16 @@
-# Parte 1 — Singly Linked List: histórico de navegação (stepper)
+# React + Vite
 
-**Cenário real:** wizard/checkout multi-step (só avança, às vezes reseta do zero).
+This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
 
-## Arquivos
-- `StepHistory.js` — a linked list em si (StepNode + StepHistory), com os TODOs
-- `CheckoutWizard.jsx` — componente React que usa StepHistory e renderiza a UI
+Currently, two official plugins are available:
 
-## Como rodar
-Coloquem os dois arquivos dentro de um projeto React (Vite, CRA, Next — tanto faz)
-e importem `CheckoutWizard` em algum lugar da árvore, ex:
+- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
+- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
 
-```jsx
-import { CheckoutWizard } from './parte-1-stepper/CheckoutWizard';
+## React Compiler
 
-function App() {
-  return <CheckoutWizard />;
-}
-```
+The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
 
-## Cronômetro: 40 min
-Ver o desafio completo (contexto, perguntas de discussão, template de
-dificuldades/retrospectiva) no arquivo `desafio-semanas-9-10-linked-lists.md`.
+## Expanding the ESLint configuration
+
+If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.

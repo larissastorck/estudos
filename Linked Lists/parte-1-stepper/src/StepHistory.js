@@ -24,14 +24,39 @@ class StepHistory {
 
   // TODO: adiciona um novo step depois do `current`
   // e move o `current` pra ele
-  push(label, data) {}
+  push(label, data) {
+    const newNode = new StepNode(label, data);
+    if(!this.head) {
+      this.head = newNode;
+      this.current = newNode;
+    } else {
+      /**.
+       * o             -> 1           -> 2
+       * 
+       * head null     -> head = 1    -> head = 1
+       * current null  -> current = 1 -> this.current.next = 2
+       */
+      this.current.next = newNode;
+      this.current = newNode;
+    }
+  }
 
   // TODO: retorna um array com os labels do head até o current
   // (isso vira o breadcrumb visual)
-  getBreadcrumb() {}
+  getBreadcrumb() {
+    const breadcrumb = [];
+    let current = this.head;
+    while(current) {
+      breadcrumb.push(current.label);
+      current = current.next;
+    }
+    return breadcrumb;
+  }
 
   // TODO: reseta tudo, current volta pro head
-  reset() {}
+  reset() {
+    this.current = this.head;
+  }
 }
 
 export { StepNode, StepHistory };
