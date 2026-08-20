@@ -32,3 +32,8 @@ import { TimedInfiniteBanner } from './parte-3-circular-banner/TimedInfiniteBann
 Resolvam primeiro o `InfiniteBanner` (intervalo fixo) e só depois
 evoluam pro `TimedInfiniteBanner` — a segunda fica bem mais fácil
 depois que a estrutura circular básica já está funcionando.
+
+## Extra
+Incluir as bolinhas que direcionam para as imagens na posição da bolinha, temos que fazer isso em 0(1)
+
+Dica: hash map
