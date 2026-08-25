@@ -16,20 +16,44 @@ class ImageCarouselList {
   constructor(images) {
     // TODO: construir a doubly linked list a partir do array `images`
     // guardar referência pro nó atual (`current`)
-    this.current = null;
+    this.head = new ImageNode(null)
+    this.tail = new ImageNode(null)
+
+    this.head.next = this.tail
+    this.tail.prev = this.head
+
+    images.forEach(img => this.addNode(new ImageNode(img)))
+
+    this.currentNode = this.head.next;
+  }
+
+  addNode(newNode) {
+    const lastNode = this.tail.prev//último nó real
+
+    newNode.prev = lastNode
+    newNode.next = this.tail
+
+    lastNode.next = newNode
+    this.tail.prev = newNode
   }
 
   next() {
     // TODO: mover current pro próximo, se existir
+    this.currentNode = this.currentNode.next
   }
 
   prev() {
     // TODO: mover current pro anterior, se existir
+    this.currentNode = this.currentNode.prev
   }
 
   // TODO: útil pra saber se mostra a seta "prev"/"next" ou desabilita
-  hasNext() {}
-  hasPrev() {}
+  hasNext() {
+    return this.currentNode.next === this.tail
+  }
+  hasPrev() {
+    return this.currentNode.prev === this.head
+  }
 }
 
 export { ImageNode, ImageCarouselList };
