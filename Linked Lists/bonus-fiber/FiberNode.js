@@ -12,9 +12,27 @@ class FiberNode {
   }
 }
 
-// TODO: dado um objeto tipo:
-// { type: 'div', children: [{type:'h1'}, {type:'p', children:[{type:'span'}]}] }
-// construir a árvore de Fiber (child/sibling/return)
-function createFiberTree(node, returnFiber = null) {}
+function createFiberTree(node, returnFiber = null) {
+  const fiber = new FiberNode(node.type);
+  fiber.return = returnFiber;
+
+  if (node.children && node.children.length > 0) {
+    let previousSibling = null;
+
+    node.children.forEach((child) => {
+      const childFiber = createFiberTree(child, fiber);
+
+      if (previousSibling === null) {
+        fiber.child = childFiber;
+      } else {
+        previousSibling.sibling = childFiber; //
+      }
+
+      previousSibling = childFiber;
+    });
+  }
+
+  return fiber;
+}
 
 export { FiberNode, createFiberTree };
